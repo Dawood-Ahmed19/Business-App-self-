@@ -275,9 +275,43 @@ export async function POST(req: Request) {
 
       if (invItem) {
         // If batches exist, update the latest batch
+        // if (Array.isArray(invItem.batches) && invItem.batches.length > 0) {
+        //   const lastBatchDate =
+        //     invItem.batches[invItem.batches.length - 1].date;
+        //   const batchIncFields: any = {};
+        //   if (isPipe) {
+        //     batchIncFields["batches.$.quantity"] = returnQty;
+        //     batchIncFields["batches.$.lengthFt"] = returnFt;
+        //   } else if (soldBy === "ft")
+        //     batchIncFields["batches.$.lengthFt"] = returnFt;
+        //   else if (soldBy === "kg")
+        //     batchIncFields["batches.$.weight"] = returnKg;
+        //   else batchIncFields["batches.$.quantity"] = returnQty;
+
+        //   await inventoryCollection.updateOne(
+        //     { name: item.originalName, "batches.date": lastBatchDate },
+        //     { $inc: batchIncFields }
+        //   );
         if (Array.isArray(invItem.batches) && invItem.batches.length > 0) {
-          const lastBatchDate =
-            invItem.batches[invItem.batches.length - 1].date;
+          // Find batch matching the sold rate, not just the latest batch
+          // const soldRate = item.costPerUnit || 0;
+          // const matchingBatch = invItem.batches.find((b: any) => {
+          //   const batchRate = b.pricePerFt || b.pricePerKg || b.pricePerUnit || 0;
+          //   return Math.abs(batchRate - soldRate) < 0.01;
+          // });
+
+          const soldRate = item.costPerUnit || 0;
+          const matchingBatch = invItem.batches.find((b: any) => {
+            const batchRate = b.pricePerFt || b.pricePerKg || b.pricePerUnit || 0;
+            const normalizedSoldRate = isPipe ? soldRate / 20 : soldRate;
+            return Math.abs(batchRate - normalizedSoldRate) < 0.01;
+          });
+
+          // const targetBatchDate = matchingBatch
+          //   ? matchingBatch.date
+          //   : invItem.batches[invItem.batches.length - 1].date;
+          const targetBatchDate = matchingBatch ? matchingBatch.date : null;
+
           const batchIncFields: any = {};
           if (isPipe) {
             batchIncFields["batches.$.quantity"] = returnQty;
@@ -288,10 +322,32 @@ export async function POST(req: Request) {
             batchIncFields["batches.$.weight"] = returnKg;
           else batchIncFields["batches.$.quantity"] = returnQty;
 
-          await inventoryCollection.updateOne(
-            { name: item.originalName, "batches.date": lastBatchDate },
-            { $inc: batchIncFields }
-          );
+          // await inventoryCollection.updateOne(
+          //   { name: item.originalName, "batches.date": targetBatchDate },
+          //   { $inc: batchIncFields }
+          // );
+          if (targetBatchDate) {
+            await inventoryCollection.updateOne(
+              { name: item.originalName, "batches.date": targetBatchDate },
+              { $inc: batchIncFields }
+            );
+          } else {
+            // No matching batch found — create a new one with original purchase price
+            const normalizedRate = isPipe ? (item.costPerUnit || 0) / 20 : (item.costPerUnit || 0);
+            const newBatch: Batch = {
+              date: new Date().toISOString(),
+              quantity: isPipe ? returnQty : soldBy === "qty" ? returnQty : 0,
+              weight: soldBy === "kg" ? returnKg : 0,
+              lengthFt: isPipe ? returnFt : soldBy === "ft" ? returnFt : 0,
+              pricePerFt: isPipe || soldBy === "ft" ? normalizedRate : undefined,
+              pricePerKg: soldBy === "kg" ? normalizedRate : undefined,
+              pricePerUnit: soldBy === "qty" ? normalizedRate : undefined,
+            };
+            await inventoryCollection.updateOne(
+              { name: item.originalName },
+              { $push: { batches: newBatch } }
+            );
+          }
         } else {
           // If no batch exists, create a new batch
           const newBatch: Batch = {

@@ -80,6 +80,35 @@ export async function POST(req: Request) {
       }
     }
 
+
+    // === CAPTURE FIFO COST BEFORE DEDUCTION ===
+    const fifoCostMap: Record<string, number> = {};
+    for (const soldItem of items) {
+      const inv = await inventoryCol.findOne({
+        name: soldItem.originalName || soldItem.item,
+        size: soldItem.size || "",
+        guage: soldItem.guage || "",
+      });
+      if (!inv) continue;
+      const invType = (inv.type ?? "").toLowerCase();
+      const isPipe = invType === "pipe";
+      const firstBatch = Array.isArray(inv.batches) && inv.batches.length > 0 ? inv.batches[0] : null;
+      const key = `${soldItem.originalName || soldItem.item}|${soldItem.size || ""}|${soldItem.guage || ""}`;
+
+      let cost = 0;
+      if (isPipe) {
+        cost = Number(firstBatch?.pricePerFt || inv.pricePerFt || 0) * 20;
+      } else if (["jali", "tanka barfi jali"].includes(invType)) {
+        cost = Number(firstBatch?.pricePerFt || inv.pricePerFt || 0);
+      } else if (inv.pricePerKg) {
+        cost = Number(firstBatch?.pricePerKg || inv.pricePerKg || 0);
+      } else {
+        cost = Number(firstBatch?.pricePerUnit || inv.pricePerUnit || 0);
+      }
+      fifoCostMap[key] = cost;
+    }
+    // === END CAPTURE ===
+
     // === DELTA INVENTORY UPDATE LOGIC ===
     const batchAwareDeduct = async (soldItem: any, deltaQty: number, deltaFt: number, deltaWeight: number) => {
       const inv = await inventoryCol.findOne({
@@ -309,18 +338,10 @@ export async function POST(req: Request) {
       const soldWeight = Number(weight) || 0;
 
       // ===== Compute profit =====
-      let costPerUnit = 0;
-      if (isPipe) {
-        costPerUnit = (Number(inv.pricePerFt) || 0) * 20;
-      } else if (isHardwarePerFt) {
-        costPerUnit = Number(inv.pricePerFt) || 0;
-      } else if (isJali || isTankaBarfi) {
-        costPerUnit = Number(inv.pricePerFt) || 0;
-      } else if (isPerKgType) {
-        costPerUnit = Number(inv.pricePerKg || inv.pricePerUnit) || 0;
-      } else {
-        costPerUnit = Number(inv.pricePerUnit) || 0;
-      }
+      // Use first batch price (FIFO) if batches exist, else fall back to main field
+
+      const fifoKey = `${originalName || item}|${size || ""}|${guage || ""}`;
+      let costPerUnit = fifoCostMap[fifoKey] ?? 0;
 
       const invoiceRatePerUnit = Number(rate);
       const profitPerUnit = Math.round(invoiceRatePerUnit - costPerUnit);
