@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dashboardBg: #181820;
+  --color-BgColor: #1e1e2f;
+  --color-cardBg: #2d3142;
+  --color-fieldBg: #181b28;
+  --color-IconBg: #41465c;
+  --color-iconColor: #3b82f6;
+
+  --font-poppins: "Poppins", sans-serif;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #invoice-section,
+  #invoice-section * {
+    visibility: visible;
+  }
+
+  #invoice-section {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    background: white;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
+
+@layer utilities {
+  @variants responsive {
+    @media (min-width: 1280px) and (max-width: 1919px) {
+      .xl-only\:text-sm {
+        @apply text-sm;
+      }
+      .xl-only\:bg-red-500 {
+        @apply bg-red-500;
+      }
+      .xl-only\:p-4 {
+        @apply p-4;
+      }
+    }
+  }
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.dark-mode input[type="date"],
+.dark-mode input[type="date"]::-webkit-datetime-edit,
+.dark-mode input[type="date"]::-webkit-datetime-edit-text,
+.dark-mode input[type="date"]::-webkit-datetime-edit-month-field,
+.dark-mode input[type="date"]::-webkit-datetime-edit-day-field,
+.dark-mode input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #ffffff;
+  background-color: transparent;
+}
+
+.light-mode input[type="date"],
+.light-mode input[type="date"]::-webkit-datetime-edit,
+.light-mode input[type="date"]::-webkit-datetime-edit-text,
+.light-mode input[type="date"]::-webkit-datetime-edit-month-field,
+.light-mode input[type="date"]::-webkit-datetime-edit-day-field,
+.light-mode input[type="date"]::-webkit-datetime-edit-year-field {
+  color: #000000;
+  background-color: transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #666;
+}

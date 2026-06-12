@@ -1,0 +1,15 @@
+{
+  "name": "Makkah Metals",
+  "short_name": "MakkaMetals",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "100x100",
+      "type": "image/png"
+    }
+  ]
+}
