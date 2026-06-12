@@ -7,7 +7,8 @@ interface ReturnItem {
   rate: number;
   refundAmount: number;
   refundProfit?: number;
-  refundWeight?: number; // We'll map this from returnValue if present
+  refundWeight?: number;
+  contactNumber?: string;
 }
 
 interface ReturnRecord {
@@ -17,6 +18,7 @@ interface ReturnRecord {
   itemReturned?: ReturnItem | ReturnItem[];
   itemsReturned?: ReturnItem[];
   customerName?: string;
+  contactNumber?: string;
 }
 
 // Helper to chunk array into groups of n
@@ -132,6 +134,9 @@ export const printReturnPDF = async (returnId: string) => {
 
       doc.setFont("helvetica", "bold").setFontSize(9);
       doc.text(`Customer: ${rtn.customerName || ""}`, x + marginX, 90);
+
+      doc.setFont("helvetica", "bold").setFontSize(9);
+      doc.text(`Contact: ${rtn.contactNumber || ""}`, x + marginX, 102);
 
       doc.setFont("helvetica", "normal").setFontSize(8);
       doc.text(

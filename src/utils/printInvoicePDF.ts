@@ -51,6 +51,9 @@ export const printInvoicePDF = async (quotationId: string, previousBalance: numb
       doc.setFont("helvetica", "bold").setFontSize(9);
       doc.text(`Customer: ${quotation.customerName || ""}`, x + marginX, 90);
 
+      doc.setFont("helvetica", "bold").setFontSize(9);
+      doc.text(`Contact: ${quotation.contactNumber || ""}`, x + marginX, 102);
+
       doc.setFont("helvetica", "normal").setFontSize(9);
       doc.text(
         `Date: ${new Date(quotation.date).toLocaleDateString()}`,

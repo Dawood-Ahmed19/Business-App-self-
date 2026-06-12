@@ -105,6 +105,12 @@ const InvoiceDetails = () => {
             </p>
           )}
 
+          {invoice.contactNumber && (
+            <p className="text-center text-gray-400 text-sm mb-1">
+              Contact: {invoice.contactNumber}
+            </p>
+          )}
+
           {invoice.createdBy && (
             <p className="text-center text-gray-300 text-sm mb-2">
               Created by

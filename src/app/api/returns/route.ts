@@ -218,7 +218,7 @@ export async function POST(req: Request) {
 
 
       const refundProfit = isPipe
-        ? (item.profitPerFt || item.profitPerUnit) * returnFt
+        ? item.profitPerUnit * returnQty
         : soldBy === "ft"
           ? (item.profitPerFt || item.profitPerUnit) * returnFt
           : soldBy === "kg"
@@ -355,29 +355,8 @@ export async function POST(req: Request) {
 
     await reportsCollection.updateOne(
       {},
-      { $inc: { totalAmount: -totalRefund, totalProfit: -totalProfitBack } },
-      { upsert: true }
+      { $inc: { totalAmount: -totalRefund, totalProfit: -totalProfitBack } }
     );
-
-    // const receivedTotal = (invoice.payments || []).reduce(
-    //   (sum: number, p: Payment) => sum + (p.amount || 0),
-    //   0
-    // );
-    // if (receivedTotal > newGrandTotal) {
-    //   const refundAmount = receivedTotal - newGrandTotal;
-    //   await quotationsCollection.updateOne(
-    //     { quotationId: invoiceId },
-    //     {
-    //       $push: {
-    //         payments: {
-    //           amount: -refundAmount,
-    //           date: new Date().toISOString(),
-    //           note: "Auto refund (return processed)",
-    //         } as Payment,
-    //       },
-    //     }
-    //   );
-    // }
 
     const receivedTotal = (invoice.payments || []).reduce(
       (sum, p) => sum + (p.amount || 0),
@@ -390,7 +369,7 @@ export async function POST(req: Request) {
         {
           $push: {
             payments: {
-              amount: -Math.min(refundAmount, invoice.grandTotal), // stop over‑refund
+              amount: -Math.min(refundAmount, invoice.grandTotal),
               date: new Date().toISOString(),
               note: "Auto refund (return processed)",
             },

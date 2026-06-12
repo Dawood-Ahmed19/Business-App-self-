@@ -24,6 +24,7 @@ interface Quotation {
   carriage?: number;
   bendingLabour?: number;
   customerName?: string;
+  contactNumber?: string;
   createdBy?: string;
 }
 
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
       bendingLabour,
       quotationId,
       customerName,
+      contactNumber,
       createdBy,
       date,
     } = await req.json();
@@ -49,6 +51,17 @@ export async function POST(req: Request) {
     const quotationsCol = db.collection<Quotation>("quotations");
     const inventoryCol = db.collection("inventory");
     const customersCol = db.collection("customers");
+    // if (customerName && customerName.trim()) {
+    //   const existing = await customersCol.findOne({
+    //     name: customerName.trim(),
+    //   });
+    //   if (!existing) {
+    //     await customersCol.insertOne({
+    //       name: customerName.trim(),
+    //       createdAt: new Date(),
+    //     });
+    //   }
+    // }
     if (customerName && customerName.trim()) {
       const existing = await customersCol.findOne({
         name: customerName.trim(),
@@ -56,8 +69,14 @@ export async function POST(req: Request) {
       if (!existing) {
         await customersCol.insertOne({
           name: customerName.trim(),
+          contactNumber: contactNumber?.trim() || "",
           createdAt: new Date(),
         });
+      } else if (contactNumber?.trim()) {
+        await customersCol.updateOne(
+          { name: customerName.trim() },
+          { $set: { contactNumber: contactNumber.trim() } }
+        );
       }
     }
 
@@ -361,6 +380,7 @@ export async function POST(req: Request) {
               balance,
               status: "active",
               ...(customerName ? { customerName } : {}),
+              ...(contactNumber ? { contactNumber } : {}),
               ...(createdBy ? { createdBy } : {}),
             },
           }
@@ -409,6 +429,7 @@ export async function POST(req: Request) {
       status: "active",
       ...(customerName ? { customerName } : {}),
       ...(createdBy ? { createdBy } : {}),
+      ...(contactNumber ? { contactNumber } : {}),
     });
 
     return NextResponse.json({

@@ -53,6 +53,7 @@ const QuotationTableInner: React.FC = () => {
   const [quotationId, setQuotationId] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
   const [customerName, setCustomerName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -98,9 +99,13 @@ const QuotationTableInner: React.FC = () => {
         }
         setSelectedCustomer(cust);
         setCustomerBalance(Math.round(previousBalance) || 0);
+        if (cust.contactNumber) {
+          setContactNumber(cust.contactNumber);
+        }
       } else {
         setSelectedCustomer(null);
         setCustomerBalance(0);
+        setContactNumber("");
       }
     }
   };
@@ -142,6 +147,7 @@ const QuotationTableInner: React.FC = () => {
       setCarriage(parsed.carriage || 0);
       setQuotationId(parsed.quotationId || "");
       setCustomerName(parsed.customerName || "");
+      setContactNumber(parsed.contactNumber || "");
     } else {
       setRows([
         {
@@ -235,6 +241,7 @@ const QuotationTableInner: React.FC = () => {
         bendingLabour,
         quotationId,
         customerName,
+        contactNumber,
       })
     );
   }, [
@@ -246,6 +253,7 @@ const QuotationTableInner: React.FC = () => {
     bendingLabour,
     quotationId,
     customerName,
+    contactNumber,
     mounted,
   ]);
 
@@ -292,7 +300,8 @@ const QuotationTableInner: React.FC = () => {
     setLoading(0);
     setCarriage(0);
     setQuotationId("");
-    setCustomerName("");
+    setCustomerName("Mr. ");
+    setContactNumber("");
     setCustomerBalance(0);
     localStorage.removeItem(STORAGE_KEY);
   };
@@ -684,6 +693,7 @@ const QuotationTableInner: React.FC = () => {
         body: JSON.stringify({
           quotationId,
           customerName,
+          contactNumber,
           discount,
           total,
           grandTotal,
@@ -762,11 +772,20 @@ const QuotationTableInner: React.FC = () => {
                 <li
                   key={cust._id}
                   className="px-4 py-2 hover:bg-gray-700 cursor-pointer"
-                  onClick={() => {
-                    setCustomerName(cust.name);
+                  // onClick={() => {
+                  //   setCustomerName(cust.name);
+                  //   setShowSuggestions(false);
+                  //   setCustomerBalance(Math.round(cust.balance) || 0);
+                  //   setSelectedCustomer(cust);
+                  // }}
+                  onClick={async () => {
+                    setCustomerName(
+                      cust.name.startsWith("Mr.") ? cust.name : "Mr. " + cust.name
+                    );
                     setShowSuggestions(false);
                     setCustomerBalance(Math.round(cust.balance) || 0);
                     setSelectedCustomer(cust);
+                    setContactNumber(cust.contactNumber || "");
                   }}
                 >
                   {cust.name}
@@ -780,6 +799,17 @@ const QuotationTableInner: React.FC = () => {
             </ul>
           )}
         </div>
+        <div className="flex items-center gap-2">
+          <label className="font-bold whitespace-nowrap">Contact:</label>
+          <input
+            value={contactNumber}
+            onChange={(e) => setContactNumber(e.target.value)}
+            placeholder="03XX-XXXXXXX"
+            className="bg-transparent border-b border-gray-500 focus:border-blue-400 outline-none text-white w-36"
+            autoComplete="off"
+          />
+        </div>
+
         <div className="flex items-center gap-2">
           <label className="font-bold">Date:</label>
           <input
