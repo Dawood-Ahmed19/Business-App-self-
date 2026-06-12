@@ -8,6 +8,8 @@ export default function CustomerProfilePage() {
   const [customer, setCustomer] = useState<any>(null);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const invoicesPerPage = 8;
 
   // Add Payment modal state
   const [showAddPayment, setShowAddPayment] = useState(false);
@@ -90,6 +92,12 @@ export default function CustomerProfilePage() {
     const invData = await invRes.json();
     if (invData.success) setInvoices(invData.invoices);
   };
+
+  const totalPages = Math.max(1, Math.ceil(invoices.length / invoicesPerPage));
+  const paginatedInvoices = invoices.slice(
+    (currentPage - 1) * invoicesPerPage,
+    currentPage * invoicesPerPage
+  );
 
   return (
     <div className="w-full p-8 text-white flex flex-col">
@@ -216,8 +224,8 @@ export default function CustomerProfilePage() {
                 </tr>
               </thead>
               <tbody>
-                {invoices.length > 0 ? (
-                  invoices.map((inv) => (
+                {paginatedInvoices.length > 0 ? (
+                  paginatedInvoices.map((inv) => (
                     <tr
                       key={inv._id}
                       className="border-t text-gray-200"
@@ -268,7 +276,29 @@ export default function CustomerProfilePage() {
                 )}
               </tbody>
             </table>
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-4 mt-4 mb-6">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-md border border-gray-500 disabled:opacity-30"
+                >
+                  Prev
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-md border border-gray-500 disabled:opacity-30"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
+
         </>
       )}
     </div>

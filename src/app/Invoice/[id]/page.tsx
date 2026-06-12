@@ -89,19 +89,19 @@ const InvoiceDetails = () => {
               onClick={() => router.back()}
               className="px-4 py-2 bg-white text-black rounded hover:bg-gray-300"
             >
-              ← Back
+              ← Back
             </button>
             <button
               onClick={() => printInvoicePDF(invoice.quotationId)}
               className="px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
             >
-              Print Invoice
+              Print Invoice
             </button>
           </div>
 
           {invoice.customerName && (
             <p className="text-center text-white text-lg font-semibold mb-1">
-              Customer: {invoice.customerName}
+              Customer: {invoice.customerName}
             </p>
           )}
 
