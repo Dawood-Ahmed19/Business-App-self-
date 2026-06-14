@@ -20,7 +20,21 @@ export default function ShowInvestment() {
             const typeMap: Record<string, number> = {};
 
             for (const item of json.items) {
-                const type = (item.type || "unknown").toLowerCase();
+                let type = (item.type || "unknown").toLowerCase();
+
+                const itemName = (item.name || "").toLowerCase().trim();
+
+                // Split hardware into separate categories
+                if (type === "hardware") {
+                    if (itemName === "sarya") {
+                        type = "sarya";
+                    } else if (itemName === "patti") {
+                        type = "patti";
+                    } else if (itemName === "angle") {
+                        type = "angle";
+                    }
+                }
+
                 const qty = Number(item.quantity) || 0;
                 const ft = Number(item.lengthFt || item.ft) || 0;
                 const kg = Number(item.weight) || 0;
@@ -29,7 +43,9 @@ export default function ShowInvestment() {
                 const pricePerKg = Number(item.pricePerKg) || 0;
 
                 const itemTotal =
-                    qty * pricePerUnit + ft * pricePerFt + kg * pricePerKg;
+                    qty * pricePerUnit +
+                    ft * pricePerFt +
+                    kg * pricePerKg;
 
                 typeMap[type] = (typeMap[type] || 0) + itemTotal;
             }
