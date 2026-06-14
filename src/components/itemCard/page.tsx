@@ -97,9 +97,7 @@ const angleSizeOptions = [
 ];
 
 const JaliNumberOptions = [
-  `12 x 12`,
-  `12 x 24 Kali`,
-  `Black 12 x 24`,
+  `12 x 24`,
   `1/16 Murgha Special`,
   `3/16 Tanka barfi`,
   `3/16 Barfi Normal`,
