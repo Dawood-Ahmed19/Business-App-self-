@@ -342,9 +342,6 @@ export default function ItemCard({ initialData }: any) {
       options: [
         "Pipe",
         "Hardware",
-        "Angle",
-        "Patti",
-        "Sarrya",
         "Jali",
         "Diamond Chadar",
         "Chowkat",

@@ -7,20 +7,22 @@ import ShowItem from "@/components/ShowItem/page";
 import { useEffect, useState } from "react";
 import Loader from "@/components/Loader/page";
 import TotalReturns from "@/components/totalReturns/page";
-import { printReturnPDF } from "@/utils/printReturnedPDF";
 import ShowReturned from "@/components/showReturned/page";
+import ShowInvestment from "@/components/showInvestment/page";
+import TotalInvestment from "@/components/totalInvestment/page";
+
 
 export default function DashboardScreen() {
   const today = new Date();
 
   const [activeTab, setActiveTab] = useState<
-    "items" | "quotations" | "returns"
+    "items" | "quotations" | "returns" | "investment"
   >("quotations");
   const [loading, setLoading] = useState(false);
   const [quotationCount, setQuotationCount] = useState(0);
   const [returnCount, setReturnCount] = useState(0);
 
-  const handleTabSwitch = (tab: "items" | "quotations" | "returns") => {
+  const handleTabSwitch = (tab: "items" | "quotations" | "returns" | "investment") => {
     if (tab === activeTab) return;
     setLoading(true);
     setActiveTab(tab);
@@ -90,6 +92,12 @@ export default function DashboardScreen() {
         >
           <TotalReturns count={returnCount} />
         </button>
+        <button
+          className="hover:cursor-pointer"
+          onClick={() => handleTabSwitch("investment")}
+        >
+          <TotalInvestment />
+        </button>
       </span>
 
       {/* Recent Invoices */}
@@ -101,6 +109,8 @@ export default function DashboardScreen() {
         <ShowItem />
       ) : activeTab === "returns" ? (
         <ShowReturned />
+      ) : activeTab === "investment" ? (
+        <ShowInvestment />
       ) : (
         ""
       )}
