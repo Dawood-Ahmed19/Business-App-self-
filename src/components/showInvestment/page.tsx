@@ -35,17 +35,49 @@ export default function ShowInvestment() {
                     }
                 }
 
-                const qty = Number(item.quantity) || 0;
-                const ft = Number(item.lengthFt || item.ft) || 0;
-                const kg = Number(item.weight) || 0;
-                const pricePerUnit = Number(item.pricePerUnit) || 0;
-                const pricePerFt = Number(item.pricePerFt) || 0;
-                const pricePerKg = Number(item.pricePerKg) || 0;
+                // const qty = Number(item.quantity) || 0;
+                // const ft = Number(item.lengthFt || item.ft) || 0;
+                // const kg = Number(item.weight) || 0;
+                // const pricePerUnit = Number(item.pricePerUnit) || 0;
+                // const pricePerFt = Number(item.pricePerFt) || 0;
+                // const pricePerKg = Number(item.pricePerKg) || 0;
 
-                const itemTotal =
-                    qty * pricePerUnit +
-                    ft * pricePerFt +
-                    kg * pricePerKg;
+                // const itemTotal =
+                //     qty * pricePerUnit +
+                //     ft * pricePerFt +
+                //     kg * pricePerKg;
+
+                let itemTotal = 0;
+
+                if (item.batches?.length) {
+                    for (const batch of item.batches) {
+                        const qty = Number(batch.quantity) || 0;
+                        const ft = Number(batch.lengthFt) || 0;
+                        const kg = Number(batch.weight) || 0;
+
+                        const pricePerUnit = Number(batch.pricePerUnit) || 0;
+                        const pricePerFt = Number(batch.pricePerFt) || 0;
+                        const pricePerKg = Number(batch.pricePerKg) || 0;
+
+                        itemTotal +=
+                            qty * pricePerUnit +
+                            ft * pricePerFt +
+                            kg * pricePerKg;
+                    }
+                } else {
+                    const qty = Number(item.quantity) || 0;
+                    const ft = Number(item.lengthFt || item.ft) || 0;
+                    const kg = Number(item.weight) || 0;
+
+                    const pricePerUnit = Number(item.pricePerUnit) || 0;
+                    const pricePerFt = Number(item.pricePerFt) || 0;
+                    const pricePerKg = Number(item.pricePerKg) || 0;
+
+                    itemTotal =
+                        qty * pricePerUnit +
+                        ft * pricePerFt +
+                        kg * pricePerKg;
+                }
 
                 typeMap[type] = (typeMap[type] || 0) + itemTotal;
             }
