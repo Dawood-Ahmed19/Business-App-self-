@@ -316,12 +316,12 @@ export default function InventoryItem({
 
       {/* Actions */}
       <div className="flex gap-2">
-        <button
+        {/* <button
           onClick={handleEditItem}
           className="text-blue-400 hover:text-blue-500"
         >
           <FontAwesomeIcon icon={faPen} />
-        </button>
+        </button> */}
         <button
           onClick={() => onDelete(_id)}
           className="text-red-400 hover:text-red-500"
