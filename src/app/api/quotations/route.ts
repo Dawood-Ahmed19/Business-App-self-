@@ -109,6 +109,22 @@ export async function POST(req: Request) {
     }
     // === END CAPTURE ===
 
+    // === VALIDATE ALL ITEMS BEFORE TOUCHING INVENTORY ===
+    for (const soldItem of items) {
+      const inv = await inventoryCol.findOne({
+        name: soldItem.originalName || soldItem.item,
+        size: soldItem.size || "",
+        guage: soldItem.guage || "",
+      });
+      if (!inv) {
+        return NextResponse.json(
+          { success: false, error: `❌ No inventory found for "${soldItem.item}".` },
+          { status: 400 }
+        );
+      }
+    }
+    // === END VALIDATION ===
+
     // === DELTA INVENTORY UPDATE LOGIC ===
     const batchAwareDeduct = async (soldItem: any, deltaQty: number, deltaFt: number, deltaWeight: number) => {
       const inv = await inventoryCol.findOne({
