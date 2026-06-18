@@ -257,7 +257,7 @@ export default function InventoryItem({
         )}
       </p> */}
       <p>
-        {isJaliOnly || isHardwarePerKg || isHardwarePerFt ? (
+        {isJaliOnly || isHardwarePerKg || isHardwarePerFt || isDiamondChadar || lowerType === "chowkat" ? (
           <span className="text-gray-500">N/A</span>
         ) : hasQuantityInDB ? (
           totalQty > 0 ? (
@@ -269,7 +269,6 @@ export default function InventoryItem({
           <span className="text-gray-500">N/A</span>
         )}
       </p>
-
 
 
       {/* Price / Ft – Pipe, Jali & Tanka Barfi Jali */}
