@@ -36,6 +36,7 @@ export default function InventoryCard() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [passwordInput, setPasswordInput] = useState("");
   const [deleteError, setDeleteError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const fetchItems = async () => {
     try {
@@ -226,14 +227,23 @@ export default function InventoryCard() {
             <p className="text-gray-300 text-sm mb-3">
               Enter password to delete this item.
             </p>
-            <input
-              type="password"
-              value={passwordInput}
-              onChange={(e) => setPasswordInput(e.target.value)}
-              placeholder="Password"
-              className="w-full p-2 rounded bg-gray-800 text-white border border-gray-600 mb-3"
-              autoFocus
-            />
+            <div className="relative mb-3">
+              <input
+                type={showPassword ? "text" : "password"}
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="Password"
+                className="w-full p-2 pr-16 rounded bg-gray-800 text-white border border-gray-600"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-blue-400 hover:text-blue-300"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
             {deleteError && (
               <p className="text-red-400 text-sm mb-3">{deleteError}</p>
             )}
