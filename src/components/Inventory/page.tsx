@@ -33,6 +33,9 @@ export default function InventoryCard() {
   const [allGuages, setAllGuages] = useState<string[]>(["All"]);
   const [loading, setLoading] = useState(false);
   const [allTypes, setAllTypes] = useState<string[]>(["All"]);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [deleteError, setDeleteError] = useState("");
 
   const fetchItems = async () => {
     try {
@@ -78,14 +81,30 @@ export default function InventoryCard() {
     fetchItems();
   }, [searchItem, typeFilter, sizeFilter, guageFilter]);
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Delete this item?")) return;
+  const handleDelete = (id: string) => {
+    setDeleteId(id);
+    setPasswordInput("");
+    setDeleteError("");
+  };
+
+  const confirmDelete = async () => {
+    if (passwordInput !== "MakkahSteelTraders00") {
+      setDeleteError("Incorrect password.");
+      return;
+    }
+    if (!deleteId) return;
     try {
-      const res = await fetch(`/api/items/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/items/${deleteId}`, { method: "DELETE" });
       const data = await res.json();
-      if (res.ok && data.success) fetchItems();
+      if (res.ok && data.success) {
+        fetchItems();
+        setDeleteId(null);
+      } else {
+        setDeleteError("Failed to delete item.");
+      }
     } catch (err) {
       console.error("Error deleting:", err);
+      setDeleteError("Error deleting item.");
     }
   };
 
@@ -199,6 +218,42 @@ export default function InventoryCard() {
           </p>
         )}
       </div>
+
+      {deleteId && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/30 backdrop-blur-sm">
+          <div className="bg-gray-900 p-6 rounded-lg shadow-lg w-full max-w-xs">
+            <h2 className="text-lg font-bold mb-4 text-white">Confirm Delete</h2>
+            <p className="text-gray-300 text-sm mb-3">
+              Enter password to delete this item.
+            </p>
+            <input
+              type="password"
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              placeholder="Password"
+              className="w-full p-2 rounded bg-gray-800 text-white border border-gray-600 mb-3"
+              autoFocus
+            />
+            {deleteError && (
+              <p className="text-red-400 text-sm mb-3">{deleteError}</p>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-3 py-2 rounded bg-red-600 hover:bg-red-700 text-white font-medium"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setDeleteId(null)}
+                className="flex-1 px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
