@@ -134,26 +134,6 @@ export async function POST(req: Request) {
       });
       if (!inv) return;
 
-      // // Deduct from main fields
-      // if (deltaQty !== 0) {
-      //   await inventoryCol.updateOne(
-      //     { _id: inv._id },
-      //     { $inc: { quantity: -deltaQty } }
-      //   );
-      // }
-      // if (deltaFt !== 0) {
-      //   await inventoryCol.updateOne(
-      //     { _id: inv._id },
-      //     { $inc: { lengthFt: -deltaFt, ft: -deltaFt } }
-      //   );
-      // }
-      // if (deltaWeight !== 0) {
-      //   await inventoryCol.updateOne(
-      //     { _id: inv._id },
-      //     { $inc: { weight: -deltaWeight } }
-      //   );
-      // }
-
       // --- BATCH-AWARE DEDUCTION (FIFO) ---
       if (inv && Array.isArray(inv.batches) && inv.batches.length > 0) {
         let updatedBatches = inv.batches.map((b: any) => ({ ...b }));

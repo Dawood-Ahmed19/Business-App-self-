@@ -173,6 +173,7 @@ const ReturnItems = () => {
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [message, setMessage] = useState("");
   const [returnRecord, setReturnRecord] = useState<ReturnRecord | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Helper to determine how the item was sold
   const getSoldBy = (item: InvoiceItem): "pipe" | "qty" | "ft" | "kg" => {
@@ -215,42 +216,6 @@ const ReturnItems = () => {
     }
   };
 
-  // Handle checkbox toggle
-  // const toggleItem = (item: InvoiceItem, checked: boolean) => {
-  //   const soldBy = getSoldBy(item);
-  //   if (checked) {
-  //     // For pipe, default to 1 qty and 20 ft (or max available)
-  //     if (soldBy === "pipe") {
-  //       setSelectedItems((prev) => [
-  //         ...prev,
-  //         {
-  //           itemName: item.originalName,
-  //           qty: 1,
-  //           ft: 20,
-  //         },
-  //       ]);
-  //     } else if (soldBy === "ft") {
-  //       setSelectedItems((prev) => [
-  //         ...prev,
-  //         { itemName: item.originalName, ft: 0 },
-  //       ]);
-  //     } else if (soldBy === "kg") {
-  //       setSelectedItems((prev) => [
-  //         ...prev,
-  //         { itemName: item.originalName, kg: 0 },
-  //       ]);
-  //     } else {
-  //       setSelectedItems((prev) => [
-  //         ...prev,
-  //         { itemName: item.originalName, qty: 0 },
-  //       ]);
-  //     }
-  //   } else {
-  //     setSelectedItems((prev) =>
-  //       prev.filter((i) => i.itemName !== item.originalName)
-  //     );
-  //   }
-  // };
 
   const toggleItem = (item: InvoiceItem, checked: boolean) => {
     const soldBy = getSoldBy(item);
@@ -338,10 +303,12 @@ const ReturnItems = () => {
 
   // Handle return
   const handleReturn = async () => {
+    if (isProcessing) return;
     if (!invoiceId || selectedItems.length === 0) {
       setMessage("Please select items and enter return quantities.");
       return;
     }
+    setIsProcessing(true);
     try {
       const res = await fetch("/api/returns", {
         method: "POST",
@@ -364,6 +331,8 @@ const ReturnItems = () => {
       }
     } catch {
       setMessage("❌ Error processing return.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -531,9 +500,10 @@ const ReturnItems = () => {
           </table>
           <button
             onClick={handleReturn}
-            className="mt-4 w-full px-4 py-2 bg-blue-600 rounded hover:bg-blue-700"
+            disabled={isProcessing}
+            className="mt-4 w-full px-4 py-2 bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Process Return
+            {isProcessing ? "Processing..." : "Process Return"}
           </button>
         </div>
       )}
