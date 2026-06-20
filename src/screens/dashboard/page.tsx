@@ -10,6 +10,8 @@ import TotalReturns from "@/components/totalReturns/page";
 import ShowReturned from "@/components/showReturned/page";
 import ShowInvestment from "@/components/showInvestment/page";
 import TotalInvestment from "@/components/totalInvestment/page";
+import TotalPendingToday from "@/components/totalPendingToday/page";
+import TotalPendingAll from "@/components/totalPendingAll/page";
 
 
 export default function DashboardScreen() {
@@ -98,6 +100,9 @@ export default function DashboardScreen() {
         >
           <TotalInvestment />
         </button>
+
+        <TotalPendingToday />
+        <TotalPendingAll />
       </span>
 
       {/* Recent Invoices */}
