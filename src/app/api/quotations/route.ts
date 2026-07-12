@@ -6,6 +6,11 @@ interface Payment {
   date: string;
 }
 
+interface Counter {
+  _id: string;
+  seq: number;
+}
+
 interface Quotation {
   _id?: string;
   quotationId: string;
@@ -425,8 +430,13 @@ export async function POST(req: Request) {
       }
     }
 
-    const count = await quotationsCol.countDocuments({});
-    const newQuotationId = `INV-${String(count + 1).padStart(4, "0")}`;
+    const countersCol = db.collection<Counter>("counters");
+    const counterDoc = await countersCol.findOneAndUpdate(
+      { _id: "quotationId" },
+      { $inc: { seq: 1 } },
+      { upsert: true, returnDocument: "after" }
+    );
+    const newQuotationId = `INV-${String(counterDoc!.seq).padStart(4, "0")}`;
 
     const result = await quotationsCol.insertOne({
       quotationId: newQuotationId,
