@@ -139,86 +139,71 @@ export async function POST(req: Request) {
       });
       if (!inv) return;
 
-      // --- BATCH-AWARE DEDUCTION (FIFO) ---
-      if (inv && Array.isArray(inv.batches) && inv.batches.length > 0) {
-        let updatedBatches = inv.batches.map((b: any) => ({ ...b }));
+      let updatedBatches = Array.isArray(inv.batches) ? inv.batches.map((b: any) => ({ ...b })) : [];
 
-        // Deduct quantity (FIFO)
-        let remainingQty = deltaQty > 0 ? deltaQty : 0;
-        if (remainingQty > 0) {
-          for (const batch of updatedBatches) {
-            if (remainingQty <= 0) break;
-            if (batch.quantity && batch.quantity > 0) {
-              const deduct = Math.min(batch.quantity, remainingQty);
-              batch.quantity -= deduct;
-              remainingQty -= deduct;
-            }
+      // Deduct FIFO from earliest batches
+      const deductFIFO = (amount: number, field: "quantity" | "lengthFt" | "weight") => {
+        let remaining = amount;
+        for (const batch of updatedBatches) {
+          if (remaining <= 0) break;
+          if (batch[field] && batch[field] > 0) {
+            const ded = Math.min(batch[field], remaining);
+            batch[field] -= ded;
+            remaining -= ded;
           }
         }
+      };
 
-        // Deduct ft (FIFO)
-        let remainingFt = deltaFt > 0 ? deltaFt : 0;
-        if (remainingFt > 0) {
-          for (const batch of updatedBatches) {
-            if (remainingFt <= 0) break;
-            if (batch.lengthFt && batch.lengthFt > 0) {
-              const deduct = Math.min(batch.lengthFt, remainingFt);
-              batch.lengthFt -= deduct;
-              remainingFt -= deduct;
-            }
-          }
+      // Restock back into the first batch (or create a new batch if none exist)
+      const restock = (amount: number, field: "quantity" | "lengthFt" | "weight") => {
+        if (updatedBatches.length > 0) {
+          updatedBatches[0][field] = (updatedBatches[0][field] || 0) + amount;
+        } else {
+          updatedBatches.push({
+            quantity: field === "quantity" ? amount : 0,
+            lengthFt: field === "lengthFt" ? amount : 0,
+            weight: field === "weight" ? amount : 0,
+            pricePerFt: inv.pricePerFt || 0,
+            pricePerUnit: inv.pricePerUnit || 0,
+            pricePerKg: inv.pricePerKg || 0,
+          });
         }
+      };
 
-        // Deduct weight (FIFO)
-        let remainingWeight = deltaWeight > 0 ? deltaWeight : 0;
-        if (remainingWeight > 0) {
-          for (const batch of updatedBatches) {
-            if (remainingWeight <= 0) break;
-            if (batch.weight && batch.weight > 0) {
-              const deduct = Math.min(batch.weight, remainingWeight);
-              batch.weight -= deduct;
-              remainingWeight -= deduct;
-            }
-          }
+      if (deltaQty > 0) deductFIFO(deltaQty, "quantity");
+      else if (deltaQty < 0) restock(-deltaQty, "quantity");
+
+      if (deltaFt > 0) deductFIFO(deltaFt, "lengthFt");
+      else if (deltaFt < 0) restock(-deltaFt, "lengthFt");
+
+      if (deltaWeight > 0) deductFIFO(deltaWeight, "weight");
+      else if (deltaWeight < 0) restock(-deltaWeight, "weight");
+
+      // Remove fully-empty batches
+      updatedBatches = updatedBatches.filter(
+        (b: any) =>
+          (b.quantity ?? 0) > 0 ||
+          (b.lengthFt ?? 0) > 0 ||
+          (b.weight ?? 0) > 0
+      );
+
+      const newTotalQty = updatedBatches.reduce((sum: number, b: any) => sum + (b.quantity ?? 0), 0);
+      const newTotalFt = updatedBatches.reduce((sum: number, b: any) => sum + (b.lengthFt ?? 0), 0);
+      const newTotalWeight = updatedBatches.reduce((sum: number, b: any) => sum + (b.weight ?? 0), 0);
+
+      await inventoryCol.updateOne(
+        { _id: inv._id },
+        {
+          $set: {
+            batches: updatedBatches,
+            quantity: newTotalQty,
+            lengthFt: newTotalFt,
+            ft: newTotalFt,
+            weight: newTotalWeight,
+            updatedAt: new Date().toISOString(),
+          },
         }
-
-        // Remove empty batches
-        updatedBatches = updatedBatches.filter(
-          (b) =>
-            (b.quantity ?? 0) > 0 ||
-            (b.lengthFt ?? 0) > 0 ||
-            (b.weight ?? 0) > 0
-        );
-
-        // Recalculate main fields
-        const newTotalQty = updatedBatches.reduce(
-          (sum, b) => sum + (b.quantity ?? 0),
-          0
-        );
-        const newTotalFt = updatedBatches.reduce(
-          (sum, b) => sum + (b.lengthFt ?? 0),
-          0
-        );
-        const newTotalWeight = updatedBatches.reduce(
-          (sum, b) => sum + (b.weight ?? 0),
-          0
-        );
-
-        await inventoryCol.updateOne(
-          { _id: inv._id },
-          {
-            $set: {
-              batches: updatedBatches,
-              quantity: newTotalQty,
-              lengthFt: newTotalFt,
-              ft: newTotalFt,
-              weight: newTotalWeight,
-              updatedAt: new Date().toISOString(),
-            },
-          }
-        );
-      }
-      // --- END BATCH-AWARE DEDUCTION ---
+      );
     };
 
     if (quotationId) {
