@@ -16,6 +16,7 @@ const TotalPendingToday = () => {
                 const todayStr = new Date().toDateString();
 
                 const sum = data.quotations.reduce((acc: number, q: any) => {
+                    if (q.status === "returned") return acc;
                     const qDate = new Date(q.date).toDateString();
                     if (qDate !== todayStr) return acc;
                     const balance =
@@ -24,7 +25,6 @@ const TotalPendingToday = () => {
                             : (q.grandTotal || q.amount || 0) - (q.totalReceived || 0);
                     return acc + (balance > 0 ? balance : 0);
                 }, 0);
-
                 setTotal(Math.round(sum));
             } catch (err) {
                 console.error("Error fetching today's pending:", err);

@@ -14,12 +14,14 @@ const TotalPendingAll = () => {
                 if (!data.success) return;
 
                 const sum = data.quotations.reduce((acc: number, q: any) => {
+                    if (q.status === "returned") return acc;
                     const balance =
                         typeof q.balance === "number"
                             ? q.balance
                             : (q.grandTotal || q.amount || 0) - (q.totalReceived || 0);
                     return acc + (balance > 0 ? balance : 0);
                 }, 0);
+
 
                 setTotal(Math.round(sum));
             } catch (err) {
