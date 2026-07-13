@@ -52,6 +52,8 @@ const QuotationTableInner: React.FC = () => {
   const [carriage, setCarriage] = useState<number>(0);
   const [quotationId, setQuotationId] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingInvoice, setIsLoadingInvoice] = useState(false);
+  const isSavingRef = React.useRef(false);
   const [customerName, setCustomerName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
@@ -196,6 +198,7 @@ const QuotationTableInner: React.FC = () => {
   // }, [editId]);
   useEffect(() => {
     if (!editId) return;
+    setIsLoadingInvoice(true);
 
     (async () => {
       try {
@@ -223,10 +226,11 @@ const QuotationTableInner: React.FC = () => {
         }
       } catch (err) {
         console.error("Failed to prefill invoice", err);
+      } finally {
+        setIsLoadingInvoice(false);
       }
     })();
   }, [editId]);
-
 
   useEffect(() => {
     if (!mounted) return;
@@ -633,6 +637,8 @@ const QuotationTableInner: React.FC = () => {
 
 
   const saveQuotation = async () => {
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
     try {
       const validRows = rows.filter(
         (r) =>
@@ -724,6 +730,7 @@ const QuotationTableInner: React.FC = () => {
     } catch (err: any) {
       showMessage("❌ " + err.message);
     } finally {
+      isSavingRef.current = false;
       setIsSaving(false);
     }
   };
@@ -1229,10 +1236,10 @@ const QuotationTableInner: React.FC = () => {
 
       <button
         onClick={() => saveQuotation()}
-        disabled={isSaving}
+        disabled={isSaving || isLoadingInvoice}
         className="mt-5 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white disabled:opacity-50"
       >
-        {isSaving ? "Saving..." : quotationId ? "Update Invoice" : "Save"}
+        {isLoadingInvoice ? "Loading invoice..." : isSaving ? "Saving..." : quotationId ? "Update Invoice" : "Save"}
       </button>
 
     </>

@@ -224,6 +224,12 @@ export async function POST(req: Request) {
     if (quotationId) {
       // UPDATE LOGIC
       const existing = await quotationsCol.findOne({ quotationId });
+      if (!existing) {
+        return NextResponse.json(
+          { success: false, error: `❌ Invoice "${quotationId}" not found. Cannot update.` },
+          { status: 404 }
+        );
+      }
       if (existing) {
         // Build a map for quick lookup
         const oldItemsMap = {};
@@ -380,6 +386,12 @@ export async function POST(req: Request) {
     // ===== Save or update quotation =====
     if (quotationId) {
       const existing = await quotationsCol.findOne({ quotationId });
+      if (!existing) {
+        return NextResponse.json(
+          { success: false, error: `❌ Invoice "${quotationId}" not found. Cannot update.` },
+          { status: 404 }
+        );
+      }
       if (existing) {
         await quotationsCol.updateOne(
           { quotationId },
