@@ -17,22 +17,6 @@ export default function CustomerProfilePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     setLoading(true);
-  //     const custRes = await fetch(`/api/customers/${id}`);
-  //     const custData = await custRes.json();
-  //     if (custData.success) setCustomer(custData.customer);
-
-  //     const invRes = await fetch(`/api/customers/${id}/invoices`);
-  //     const invData = await invRes.json();
-  //     if (invData.success) setInvoices(invData.invoices);
-
-  //     setLoading(false);
-  //   }
-  //   if (id) fetchData();
-  // }, [id]);
-
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -42,12 +26,7 @@ export default function CustomerProfilePage() {
 
       const invRes = await fetch(`/api/customers/${id}/invoices`);
       const invData = await invRes.json();
-      if (invData.success) {
-        const activeInvoices = invData.invoices.filter(
-          (inv: any) => inv.status?.toLowerCase() !== "returned"
-        );
-        setInvoices(activeInvoices);
-      }
+      if (invData.success) setInvoices(invData.invoices);
 
       setLoading(false);
     }
