@@ -13,18 +13,18 @@ const TotalPendingToday = () => {
                 const data = await res.json();
                 if (!data.success) return;
 
-                const todayStr = new Date().toDateString();
+                const todayStr = new Date().toISOString().slice(0, 10);
 
-                const sum = data.quotations.reduce((acc: number, q: any) => {
-                    if (q.status === "returned") return acc;
-                    const qDate = new Date(q.date).toDateString();
-                    if (qDate !== todayStr) return acc;
-                    const balance =
-                        typeof q.balance === "number"
-                            ? q.balance
-                            : (q.grandTotal || q.amount || 0) - (q.totalReceived || 0);
-                    return acc + (balance > 0 ? balance : 0);
-                }, 0);
+const sum = data.quotations.reduce((acc: number, q: any) => {
+    if (q.status === "returned") return acc;
+    const qDateStr = new Date(q.date).toISOString().slice(0, 10);
+    if (qDateStr !== todayStr) return acc;
+    const balance =
+        typeof q.balance === "number"
+            ? q.balance
+            : (q.grandTotal || q.amount || 0) - (q.totalReceived || 0);
+    return acc + (balance > 0 ? balance : 0);
+}, 0);
                 setTotal(Math.round(sum));
             } catch (err) {
                 console.error("Error fetching today's pending:", err);
