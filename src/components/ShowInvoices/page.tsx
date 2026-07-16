@@ -172,7 +172,7 @@ const ShowInvoices = () => {
                   {q.quotationId} {isReturned ? "(returned)" : ""}
                 </p>
                 <p className="w-[120px]">
-                  {new Date(q.date).toLocaleDateString()}
+                  {new Date(q.date).toLocaleDateString("en-US", { timeZone: "UTC" })}
                 </p>
                 <p className="w-[80px] text-center">
                   {q.discount.toLocaleString("en-US", {
@@ -272,7 +272,7 @@ const ShowInvoices = () => {
                   key={i}
                   className="flex justify-between border-b border-gray-700 py-1 text-sm text-gray-200"
                 >
-                  <span>{new Date(p.date).toLocaleDateString()}</span>
+                  <span>{new Date(p.date).toLocaleDateString("en-US", { timeZone: "UTC" })}</span>
                   <span>
                     {p.amount.toLocaleString("en-US", {
                       minimumFractionDigits: 0,
