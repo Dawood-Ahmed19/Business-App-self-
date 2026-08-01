@@ -12,6 +12,7 @@ interface Quotation {
   quotationTotalProfit: number;
   status: string;
   items: any[];
+  loading?: number;
 }
 
 const Reports = () => {
@@ -42,6 +43,7 @@ const Reports = () => {
       quotationId: q.quotationId,
       grandTotal: q.grandTotal,
       profit: q.quotationTotalProfit || 0,
+      loading: q.loading || 0,
     }));
 
     const totalAmount = quotations.reduce((s, q) => s + q.grandTotal, 0);
@@ -81,6 +83,7 @@ const Reports = () => {
         quotationId: q.quotationId,
         grandTotal: q.grandTotal,
         profit: q.quotationTotalProfit || 0,
+        loading: q.loading || 0,
       })),
       quotations.reduce((s, q) => s + q.grandTotal, 0),
       quotations.reduce((s, q) => s + (q.quotationTotalProfit || 0), 0),
@@ -237,7 +240,11 @@ const Reports = () => {
         (sum, q) => sum + (q.quotationTotalProfit || 0),
         0
       );
-      setNetMonthlyProfit(totalInvoiceProfit - grandTotalExpenses);
+      const totalLoading = quotations.reduce(
+        (sum, q) => sum + (q.loading || 0),
+        0
+      );
+      setNetMonthlyProfit(totalInvoiceProfit + totalLoading - grandTotalExpenses);
     } else {
       setNetMonthlyProfit(0);
     }
