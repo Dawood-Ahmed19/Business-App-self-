@@ -393,46 +393,66 @@ export async function POST(req: Request) {
     // const newGrandTotal = invoice.grandTotal - totalRefund;
     const newGrandTotal = Math.max(invoice.grandTotal - totalRefund, 0);
     const newProfit = (invoice.quotationTotalProfit || 0) - totalProfitBack;
-
-    await quotationsCollection.updateOne(
-      { quotationId: invoiceId },
-      {
-        $set: {
-          items: updatedItems,
-          grandTotal: newGrandTotal,
-          quotationTotalProfit: newProfit,
-          updatedAt: new Date().toISOString(),
-          ...(updatedItems.length === 0
-            ? { status: "returned", grandTotal: 0, quotationTotalProfit: 0 }
-            : {}),
-        },
-      }
-    );
-
-    await reportsCollection.updateOne(
-      {},
-      { $inc: { totalAmount: -totalRefund, totalProfit: -totalProfitBack } }
+    const newTotal = updatedItems.reduce(
+      (sum, i) => sum + (Number(i.amount) || 0),
+      0
     );
 
     const receivedTotal = (invoice.payments || []).reduce(
       (sum, p) => sum + (p.amount || 0),
       0
     );
+
+    let refundPaymentEntry: Payment | null = null;
+    let finalReceivedTotal = receivedTotal;
+
     if (receivedTotal > newGrandTotal) {
-      const refundAmount = receivedTotal - newGrandTotal;
-      await quotationsCollection.updateOne(
-        { quotationId: invoiceId },
-        {
-          $push: {
-            payments: {
-              amount: -Math.min(refundAmount, invoice.grandTotal),
-              date: new Date().toISOString(),
-              note: "Auto refund (return processed)",
-            },
-          },
-        }
+      const refundAmount = Math.min(
+        receivedTotal - newGrandTotal,
+        invoice.grandTotal
       );
+      refundPaymentEntry = {
+        amount: -refundAmount,
+        date: new Date().toISOString(),
+        note: "Auto refund (return processed)",
+      };
+      finalReceivedTotal = receivedTotal - refundAmount;
     }
+
+    const newBalance = newGrandTotal - finalReceivedTotal;
+
+    const updateOps: any = {
+      $set: {
+        items: updatedItems,
+        total: newTotal,
+        grandTotal: newGrandTotal,
+        amount: newGrandTotal,
+        balance: newBalance,
+        totalReceived: finalReceivedTotal,
+        quotationTotalProfit: newProfit,
+        updatedAt: new Date().toISOString(),
+        ...(updatedItems.length === 0
+          ? {
+            status: "returned",
+            grandTotal: 0,
+            amount: 0,
+            balance: 0,
+            quotationTotalProfit: 0,
+          }
+          : {}),
+      },
+    };
+
+    if (refundPaymentEntry) {
+      updateOps.$push = { payments: refundPaymentEntry };
+    }
+
+    await quotationsCollection.updateOne({ quotationId: invoiceId }, updateOps);
+
+    await reportsCollection.updateOne(
+      {},
+      { $inc: { totalAmount: -totalRefund, totalProfit: -totalProfitBack } }
+    );
 
     const lastReturn = await returnsCollection
       .find()
