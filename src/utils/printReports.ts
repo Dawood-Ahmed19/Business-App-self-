@@ -6,6 +6,7 @@ interface ReportItem {
   quotationId: string;
   grandTotal: number;
   profit: number;
+  loading?: number;
 }
 
 // Helper for custom date formatting (always DD-MM-YYYY)
@@ -161,6 +162,11 @@ export const printGenericReport = async (
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+    const totalLoading = quotations.reduce(
+      (sum, q) => sum + (q.loading || 0),
+      0
+    );
+
 
     // HEADER
     doc.setFont("helvetica", "bold").setFontSize(20);
@@ -213,6 +219,7 @@ export const printGenericReport = async (
       body: [
         ["Total Sales", totalAmount.toLocaleString("en-US")],
         ["Total Profit", totalProfit.toLocaleString("en-US")],
+        ["Total Loading", totalLoading.toLocaleString("en-US")],
       ],
       tableWidth: 200,
       margin: { left: pageWidth - 240 },
