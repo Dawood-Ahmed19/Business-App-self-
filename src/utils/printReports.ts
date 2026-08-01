@@ -38,6 +38,7 @@ export const printMonthlyReport = async (
     });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
+    const totalLoading = quotations.reduce((sum, q) => sum + (q.loading || 0), 0);
 
     const formattedMonth = new Date(year, month - 1).toLocaleString("default", {
       month: "long",
@@ -109,6 +110,7 @@ export const printMonthlyReport = async (
       ["Total Sales", `${totalAmount.toLocaleString("en-US")}`],
       ["Total Profit", `${totalProfit.toLocaleString("en-US")}`],
       ["Total Expenses", `${monthlyExpenses.toLocaleString("en-US")}`],
+      ["Total Loading", `${totalLoading.toLocaleString("en-US")}`],
       ["Salaries Paid", `${salariesPaid.toLocaleString("en-US")}`],
       ["Net Profit", `${netMonthlyProfit.toLocaleString("en-US")}`],
     ];
@@ -162,10 +164,6 @@ export const printGenericReport = async (
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-    const totalLoading = quotations.reduce(
-      (sum, q) => sum + (q.loading || 0),
-      0
-    );
 
 
     // HEADER
@@ -219,7 +217,6 @@ export const printGenericReport = async (
       body: [
         ["Total Sales", totalAmount.toLocaleString("en-US")],
         ["Total Profit", totalProfit.toLocaleString("en-US")],
-        ["Total Loading", totalLoading.toLocaleString("en-US")],
       ],
       tableWidth: 200,
       margin: { left: pageWidth - 240 },
