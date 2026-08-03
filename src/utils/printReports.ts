@@ -7,6 +7,8 @@ interface ReportItem {
   grandTotal: number;
   profit: number;
   loading?: number;
+  totalReceived?: number;
+  balance?: number;
 }
 
 // Helper for custom date formatting (always DD-MM-YYYY)
@@ -164,7 +166,8 @@ export const printGenericReport = async (
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
-
+    const totalReceived = quotations.reduce((sum, q) => sum + (q.totalReceived || 0), 0);
+    const totalBalance = quotations.reduce((sum, q) => sum + (q.balance || 0), 0);
 
     // HEADER
     doc.setFont("helvetica", "bold").setFontSize(20);
@@ -217,6 +220,8 @@ export const printGenericReport = async (
       body: [
         ["Total Sales", totalAmount.toLocaleString("en-US")],
         ["Total Profit", totalProfit.toLocaleString("en-US")],
+        ["Total Received", totalReceived.toLocaleString("en-US")],
+        ["Total Balance", totalBalance.toLocaleString("en-US")],
       ],
       tableWidth: 200,
       margin: { left: pageWidth - 240 },
