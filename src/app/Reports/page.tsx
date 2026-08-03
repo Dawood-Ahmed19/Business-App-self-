@@ -13,6 +13,8 @@ interface Quotation {
   status: string;
   items: any[];
   loading?: number;
+  totalReceived?: number;
+  balance?: number;
 }
 
 const Reports = () => {
@@ -44,6 +46,8 @@ const Reports = () => {
       grandTotal: q.grandTotal,
       profit: q.quotationTotalProfit || 0,
       loading: q.loading || 0,
+      totalReceived: q.totalReceived || 0,
+      balance: q.balance || 0,
     }));
 
     const totalAmount = quotations.reduce((s, q) => s + q.grandTotal, 0);
@@ -282,6 +286,7 @@ const Reports = () => {
         }
 
         const totalProfit = (profitPerUnit || 0) * multiplier;
+
         return sum + totalProfit;
       }, 0)
       : 0;
