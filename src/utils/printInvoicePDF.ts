@@ -46,7 +46,7 @@ export const printInvoicePDF = async (quotationId: string, previousBalance: numb
       doc.setFontSize(9).setFont("helvetica", "normal");
       doc.text("Traders", x + marginX + 52, 52);
       doc.text("Choha Road, Kallar", x + marginX, 64);
-      doc.text("Cell: 0316-5848572 , 0303-5964402", x + marginX, 76);
+      doc.text("Cell: 0302-5251026 , 0303-5964402", x + marginX, 76);
 
       doc.setFont("helvetica", "bold").setFontSize(9);
       doc.text(`Customer: ${quotation.customerName || ""}`, x + marginX, 90);
