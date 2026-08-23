@@ -103,6 +103,7 @@ const JaliNumberOptions = [
   `3/16 Barfi Normal`,
   `1/2 China steel`,
   `16x26 Jasti Jali`
+  `3/32 Murgha Normal`
 ];
 const ChorasKhanaChinaJaliSizeOptions = [`3'`, `4'`, `5'`, `6'`];
 
