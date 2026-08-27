@@ -496,7 +496,14 @@ const ReturnItems = () => {
                             max={maxFt}
                             value={selected?.ft ?? ""}
                             disabled={!selected}
-                            onChange={(e) => updateField(item, idx, "ft", Math.min(Number(e.target.value), maxQty))}
+                            onChange={(e) =>
+                              updateField(
+                                item,
+                                idx,
+                                "ft",
+                                Math.min(Number(e.target.value), maxFt)
+                              )
+                            }
                             className="w-16 bg-gray-900 border border-gray-600 rounded text-center"
                           />
                           <span className="text-xs text-gray-400">
@@ -516,7 +523,15 @@ const ReturnItems = () => {
                             max={maxKg}
                             value={selected?.kg ?? ""}
                             disabled={!selected}
-                            onChange={(e) => updateField(item, idx, "kg", Math.min(Number(e.target.value), maxQty))}
+                            // KG
+                            onChange={(e) =>
+                              updateField(
+                                item,
+                                idx,
+                                "kg",
+                                Math.min(Number(e.target.value), maxKg)
+                              )
+                            }
                             className="w-16 bg-gray-900 border border-gray-600 rounded text-center"
                           />
                           <span className="text-xs text-gray-400">
