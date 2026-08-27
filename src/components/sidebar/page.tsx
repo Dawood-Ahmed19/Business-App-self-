@@ -139,7 +139,7 @@ export default function Sidebar() {
         >
           {loggingOut ? "Logging out..." : "Logout"}
         </button>
-        © {new Date().getFullYear()} TahaMetals
+        © {new Date().getFullYear()} MakkahMetals
       </div>
     </div>
   );
