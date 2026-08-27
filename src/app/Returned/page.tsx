@@ -26,6 +26,7 @@ interface Invoice {
 }
 
 interface SelectedItem {
+  index: number;
   itemName: string;
   size?: string;
   guage?: string;
@@ -69,6 +70,8 @@ const ReturnInvoice = ({
     if (item.guage) str += ` ${item.guage}`;
     return str.trim();
   };
+
+
 
   // Helper to infer soldBy
   const getSoldBy = (item: any): "pipe" | "qty" | "ft" | "kg" => {
@@ -216,60 +219,119 @@ const ReturnItems = () => {
     }
   };
 
+  const resolveItemName = (item: any): string =>
+    item.originalName || item.item || item.name || item.type || "";
 
-  const toggleItem = (item: InvoiceItem, checked: boolean) => {
+
+  // const toggleItem = (item: InvoiceItem, index: number, checked: boolean) => {
+  //   const soldBy = getSoldBy(item);
+  //   const keyFields = {
+  //     itemName: resolveItemName(item),
+  //     size: item.size,
+  //     guage: item.guage,
+  //   };
+
+  //   if (checked) {
+  //     if (soldBy === "pipe") {
+  //       setSelectedItems((prev) => [
+  //         ...prev,
+  //         {
+  //           ...keyFields,
+  //           qty: 1,
+  //           ft: 20,
+  //         },
+  //       ]);
+  //     } else if (soldBy === "ft") {
+  //       setSelectedItems((prev) => [
+  //         ...prev,
+  //         { ...keyFields, ft: 0 },
+  //       ]);
+  //     } else if (soldBy === "kg") {
+  //       setSelectedItems((prev) => [
+  //         ...prev,
+  //         { ...keyFields, kg: 0 },
+  //       ]);
+  //     } else {
+  //       setSelectedItems((prev) => [
+  //         ...prev,
+  //         { ...keyFields, qty: 0 },
+  //       ]);
+  //     }
+  //   } else {
+  //     setSelectedItems((prev) =>
+  //       prev.filter(
+  //         (i) =>
+  //           !(
+  //             i.itemName === item.originalName &&
+  //             i.size === item.size &&
+  //             i.guage === item.guage
+  //           )
+  //       )
+  //     );
+  //   }
+  // };
+
+  const toggleItem = (item: InvoiceItem, index: number, checked: boolean) => {
     const soldBy = getSoldBy(item);
     const keyFields = {
-      itemName: item.originalName,
+      index,
+      itemName: resolveItemName(item),
       size: item.size,
       guage: item.guage,
     };
 
     if (checked) {
       if (soldBy === "pipe") {
-        setSelectedItems((prev) => [
-          ...prev,
-          {
-            ...keyFields,
-            qty: 1,
-            ft: 20,
-          },
-        ]);
+        setSelectedItems((prev) => [...prev, { ...keyFields, qty: 1, ft: 20 }]);
       } else if (soldBy === "ft") {
-        setSelectedItems((prev) => [
-          ...prev,
-          { ...keyFields, ft: 0 },
-        ]);
+        setSelectedItems((prev) => [...prev, { ...keyFields, ft: 0 }]);
       } else if (soldBy === "kg") {
-        setSelectedItems((prev) => [
-          ...prev,
-          { ...keyFields, kg: 0 },
-        ]);
+        setSelectedItems((prev) => [...prev, { ...keyFields, kg: 0 }]);
       } else {
-        setSelectedItems((prev) => [
-          ...prev,
-          { ...keyFields, qty: 0 },
-        ]);
+        setSelectedItems((prev) => [...prev, { ...keyFields, qty: 0 }]);
       }
     } else {
-      setSelectedItems((prev) =>
-        prev.filter(
-          (i) =>
-            !(
-              i.itemName === item.originalName &&
-              i.size === item.size &&
-              i.guage === item.guage
-            )
-        )
-      );
+      setSelectedItems((prev) => prev.filter((i) => i.index !== index));
     }
   };
 
-  const updateField = (
-    item: InvoiceItem,
-    field: keyof SelectedItem,
-    value: number
-  ) => {
+  // const updateField = (
+  //   item: InvoiceItem,
+  //   field: keyof SelectedItem,
+  //   value: number
+  // ) => {
+  //   const soldBy = getSoldBy(item);
+  //   const maxQty = item.qty || 0;
+  //   const maxFt = item.ft || 0;
+  //   const maxKg = item.weight || 0;
+
+  //   setSelectedItems((prev) =>
+  //     prev.map((i) => {
+  //       if (
+  //         i.itemName !== item.originalName ||
+  //         i.size !== item.size ||
+  //         i.guage !== item.guage
+  //       ) {
+  //         return i;
+  //       }
+  //       if (soldBy === "pipe") {
+  //         const cappedQty = Math.min(value, maxQty);
+  //         return {
+  //           ...i,
+  //           qty: cappedQty,
+  //           ft: cappedQty * 20 > maxFt ? maxFt : cappedQty * 20,
+  //         };
+  //       }
+  //       let cappedValue = value;
+  //       if (field === "qty") cappedValue = Math.min(value, maxQty);
+  //       if (field === "ft") cappedValue = Math.min(value, maxFt);
+  //       if (field === "kg") cappedValue = Math.min(value, maxKg);
+  //       return { ...i, [field]: cappedValue };
+  //     })
+  //   );
+  // };
+
+  const updateField = (item: InvoiceItem, index: number, field: keyof SelectedItem, value: number) => {
     const soldBy = getSoldBy(item);
     const maxQty = item.qty || 0;
     const maxFt = item.ft || 0;
@@ -277,20 +339,10 @@ const ReturnItems = () => {
 
     setSelectedItems((prev) =>
       prev.map((i) => {
-        if (
-          i.itemName !== item.originalName ||
-          i.size !== item.size ||
-          i.guage !== item.guage
-        ) {
-          return i;
-        }
+        if (i.index !== index) return i;
         if (soldBy === "pipe") {
           const cappedQty = Math.min(value, maxQty);
-          return {
-            ...i,
-            qty: cappedQty,
-            ft: cappedQty * 20 > maxFt ? maxFt : cappedQty * 20,
-          };
+          return { ...i, qty: cappedQty, ft: cappedQty * 20 > maxFt ? maxFt : cappedQty * 20 };
         }
         let cappedValue = value;
         if (field === "qty") cappedValue = Math.min(value, maxQty);
@@ -300,6 +352,8 @@ const ReturnItems = () => {
       })
     );
   };
+
+  const payloadItems = selectedItems.map(({ index, ...rest }) => rest);
 
   // Handle return
   const handleReturn = async () => {
@@ -313,7 +367,7 @@ const ReturnItems = () => {
       const res = await fetch("/api/returns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invoiceId, items: selectedItems }),
+        body: JSON.stringify({ invoiceId, items: payloadItems }),
       });
       const data = await res.json();
       if (data.success) {
@@ -383,23 +437,21 @@ const ReturnItems = () => {
                 // const selected = selectedItems.find(
                 //   (s) => s.itemName === item.originalName
                 // );
-                const selected = selectedItems.find(
-                  (s) =>
-                    s.itemName === item.originalName &&
-                    s.size === item.size &&
-                    s.guage === item.guage
-                );
+                // const selected = selectedItems.find(
+                //   (s) =>
+                //     s.itemName === item.originalName &&
+                //     s.size === item.size &&
+                //     s.guage === item.guage
+                // );
+
+                const selected = selectedItems.find((s) => s.index === idx);
                 const maxQty = item.qty || 0;
                 const maxFt = item.ft || 0;
                 const maxKg = item.weight || 0;
                 return (
                   <tr key={item.originalName + idx} className="text-center">
                     <td className="border border-white">
-                      <input
-                        type="checkbox"
-                        checked={!!selected}
-                        onChange={(e) => toggleItem(item, e.target.checked)}
-                      />
+                      <input type="checkbox" checked={!!selected} onChange={(e) => toggleItem(item, idx, e.target.checked)} />
                     </td>
                     <td className="border border-white">
                       {getDisplayName(item)}
@@ -413,13 +465,7 @@ const ReturnItems = () => {
                             max={maxQty}
                             value={selected?.qty ?? ""}
                             disabled={!selected}
-                            onChange={(e) =>
-                              updateField(
-                                item,
-                                "qty",
-                                Math.min(Number(e.target.value), maxQty)
-                              )
-                            }
+                            onChange={(e) => updateField(item, idx, "qty", Math.min(Number(e.target.value), maxQty))}
                             className="w-16 bg-gray-900 border border-gray-600 rounded text-center"
                           />
                           <span className="text-xs text-gray-400">
@@ -450,13 +496,7 @@ const ReturnItems = () => {
                             max={maxFt}
                             value={selected?.ft ?? ""}
                             disabled={!selected}
-                            onChange={(e) =>
-                              updateField(
-                                item,
-                                "ft",
-                                Math.min(Number(e.target.value), maxFt)
-                              )
-                            }
+                            onChange={(e) => updateField(item, idx, "ft", Math.min(Number(e.target.value), maxQty))}
                             className="w-16 bg-gray-900 border border-gray-600 rounded text-center"
                           />
                           <span className="text-xs text-gray-400">
@@ -476,13 +516,7 @@ const ReturnItems = () => {
                             max={maxKg}
                             value={selected?.kg ?? ""}
                             disabled={!selected}
-                            onChange={(e) =>
-                              updateField(
-                                item,
-                                "kg",
-                                Math.min(Number(e.target.value), maxKg)
-                              )
-                            }
+                            onChange={(e) => updateField(item, idx, "kg", Math.min(Number(e.target.value), maxQty))}
                             className="w-16 bg-gray-900 border border-gray-600 rounded text-center"
                           />
                           <span className="text-xs text-gray-400">
