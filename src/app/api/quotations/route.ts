@@ -651,12 +651,10 @@ export async function GET(req: Request) {
       );
 
       const quotationTotalProfit =
-        (q.quotationTotalProfit ??
-          q.items?.reduce(
-            (sum: number, i: any) => sum + (i.totalProfit || 0),
-            0
-          ) ??
-          0) + (Number(q.carriage) || 0);
+        q.quotationTotalProfit ??
+        ((q.items?.reduce((sum, i) => sum + (i.totalProfit || 0), 0) || 0) +
+          (Number(q.carriage) || 0) +
+          (Number(q.bendingLabour) || 0));
 
       return {
         ...q,
